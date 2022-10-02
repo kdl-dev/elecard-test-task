@@ -7,8 +7,9 @@
 ---
 ### Instruction for starting
 
-1. <b>```docker build . -t elecard-test-task```</b>
-2. <b>```docker run --rm  elecard-test-task```</b> 
+1. <p>Add your personal auth key to the .env file.</p>
+2. <b>```docker build . -t elecard-test-task```</b>
+3. <b>```docker run --rm  elecard-test-task```</b> 
 
 ---
 
