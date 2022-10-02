@@ -8,6 +8,7 @@ import (
 	"math"
 	"math/big"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/kdl-dev/elecard-test-task/pkg/input"
@@ -101,15 +102,22 @@ func (cli *CLI) CalculateRectangles(resp *input.GetTasksResponse) (*[]input.Test
 
 	for index, test := range *resp.Tests {
 
-		arrSquaresRT := calculateArrSquaresRT(&test)
-		arrSquaresLB := calculateArrSquaresLB(&test)
+		arrSquaresRT, err := calculateArrSquaresRT(&test)
+		if err != nil {
+			return nil, err
+		}
 
-		lb, err := calculateGlobalLeftBottom(*arrSquaresLB)
+		arrSquaresLB, err := calculateArrSquaresLB(&test)
 		if err != nil {
 			return nil, err
 		}
 
 		rt, err := calculateGlobalRightTop(*arrSquaresRT)
+		if err != nil {
+			return nil, err
+		}
+
+		lb, err := calculateGlobalLeftBottom(*arrSquaresLB)
 		if err != nil {
 			return nil, err
 		}
@@ -122,13 +130,24 @@ func (cli *CLI) CalculateRectangles(resp *input.GetTasksResponse) (*[]input.Test
 	return &result, nil
 }
 
-func calculateArrSquaresLB(test *input.TestTasks) *[]models.Coordinates {
+func calculateArrSquaresLB(test *input.TestTasks) (*[]models.Coordinates, error) {
 	squares_left_bottom := make([]models.Coordinates, 0, len(*test))
 
 	for _, circle := range *test {
-		bigFloatX, precisionX := getBigFloat(circle.X.String())
-		bigFloatY, precisionY := getBigFloat(circle.Y.String())
-		bigFloatR, precisionR := getBigFloat(circle.R.String())
+		bigFloatX, precisionX, err := getBigFloat(circle.X.String())
+		if err != nil {
+			return nil, err
+		}
+
+		bigFloatY, precisionY, err := getBigFloat(circle.Y.String())
+		if err != nil {
+			return nil, err
+		}
+
+		bigFloatR, precisionR, err := getBigFloat(circle.R.String())
+		if err != nil {
+			return nil, err
+		}
 
 		leftBottomX := bigFloatX.Sub(bigFloatX, bigFloatR)
 		leftBottomY := bigFloatY.Sub(bigFloatY, bigFloatR)
@@ -139,16 +158,27 @@ func calculateArrSquaresLB(test *input.TestTasks) *[]models.Coordinates {
 		})
 	}
 
-	return &squares_left_bottom
+	return &squares_left_bottom, nil
 }
 
-func calculateArrSquaresRT(test *input.TestTasks) *[]models.Coordinates {
+func calculateArrSquaresRT(test *input.TestTasks) (*[]models.Coordinates, error) {
 	squares_right_top := make([]models.Coordinates, 0, len(*test))
 
 	for _, circle := range *test {
-		bigFloatX, precisionX := getBigFloat(circle.X.String())
-		bigFloatY, precisionY := getBigFloat(circle.Y.String())
-		bigFloatR, precisionR := getBigFloat(circle.R.String())
+		bigFloatX, precisionX, err := getBigFloat(circle.X.String())
+		if err != nil {
+			return nil, err
+		}
+
+		bigFloatY, precisionY, err := getBigFloat(circle.Y.String())
+		if err != nil {
+			return nil, err
+		}
+
+		bigFloatR, precisionR, err := getBigFloat(circle.R.String())
+		if err != nil {
+			return nil, err
+		}
 
 		rightTopX := bigFloatX.Add(bigFloatX, bigFloatR)
 		rightTopY := bigFloatY.Add(bigFloatY, bigFloatR)
@@ -159,23 +189,38 @@ func calculateArrSquaresRT(test *input.TestTasks) *[]models.Coordinates {
 		})
 	}
 
-	return &squares_right_top
+	return &squares_right_top, nil
 }
 
 func calculateGlobalLeftBottom(points []models.Coordinates) (*models.Coordinates, error) {
 
 	var bfPoint_X *big.Float
 	var bfPoint_Y *big.Float
-	min_x, _ := getBigFloat(points[0].X.String())
-	min_y, _ := getBigFloat(points[0].Y.String())
+	min_x, _, err := getBigFloat(points[0].X.String())
+	if err != nil {
+		return nil, err
+	}
+
+	min_y, _, err := getBigFloat(points[0].Y.String())
+	if err != nil {
+		return nil, err
+	}
 
 	for _, point := range points {
-		bfPoint_X, _ = getBigFloat(point.X.String())
+		bfPoint_X, _, err = getBigFloat(point.X.String())
+		if err != nil {
+			return nil, err
+		}
+
 		if bfPoint_X.Cmp(min_x) == -1 {
 			min_x = bfPoint_X
 		}
 
-		bfPoint_Y, _ = getBigFloat(point.Y.String())
+		bfPoint_Y, _, err = getBigFloat(point.Y.String())
+		if err != nil {
+			return nil, err
+		}
+
 		if bfPoint_Y.Cmp(min_y) == -1 {
 			min_y = bfPoint_Y
 		}
@@ -192,16 +237,31 @@ func calculateGlobalRightTop(points []models.Coordinates) (*models.Coordinates, 
 	var bfPoint_X *big.Float
 	var bfPoint_Y *big.Float
 
-	max_x, _ := getBigFloat(points[0].X.String())
-	max_y, _ := getBigFloat(points[0].Y.String())
+	max_x, _, err := getBigFloat(points[0].X.String())
+	if err != nil {
+		return nil, err
+	}
+
+	max_y, _, err := getBigFloat(points[0].Y.String())
+	if err != nil {
+		return nil, err
+	}
 
 	for _, point := range points {
-		bfPoint_X, _ = getBigFloat(point.X.String())
+		bfPoint_X, _, err = getBigFloat(point.X.String())
+		if err != nil {
+			return nil, err
+		}
+
 		if bfPoint_X.Cmp(max_x) == 1 {
 			max_x = bfPoint_X
 		}
 
-		bfPoint_Y, _ = getBigFloat(point.Y.String())
+		bfPoint_Y, _, err = getBigFloat(point.Y.String())
+		if err != nil {
+			return nil, err
+		}
+
 		if bfPoint_Y.Cmp(max_y) == 1 {
 			max_y = bfPoint_Y
 		}
@@ -213,7 +273,12 @@ func calculateGlobalRightTop(points []models.Coordinates) (*models.Coordinates, 
 	}, nil
 }
 
-func getBigFloat(value string) (*big.Float, int) {
+func getBigFloat(value string) (*big.Float, int, error) {
+
+	_, err := strconv.ParseFloat(value, 64)
+	if err != nil {
+		return nil, -1, err
+	}
 
 	var integerDigitCount int
 	var fractionalDigitCount int
@@ -229,5 +294,5 @@ func getBigFloat(value string) (*big.Float, int) {
 	bf := big.NewFloat(0.0)
 	bf.SetMode(bf.Mode()).SetPrec(precision + 10).SetString(value)
 
-	return bf, fractionalDigitCount
+	return bf, fractionalDigitCount, nil
 }
