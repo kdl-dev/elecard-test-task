@@ -100,23 +100,28 @@ func (cli *CLI) CalculateRectangles(resp *input.GetTasksResponse) (*[]input.Test
 
 	var result = make([]input.TestResults, len(*resp.Tests))
 
+	// Counting for each test
 	for index, test := range *resp.Tests {
 
+		// Counting the coordinates of the right top corner of the circumscribing squares for each circle
 		arrSquaresRT, err := calculateArrSquaresRT(&test)
 		if err != nil {
 			return nil, err
 		}
 
+		// Counting the coordinates of the left bottom corner of the circumscribing squares for each circle
 		arrSquaresLB, err := calculateArrSquaresLB(&test)
 		if err != nil {
 			return nil, err
 		}
 
+		// Counting the coordinates of the right top corner of the circumscribing rectangle
 		rt, err := calculateGlobalRightTop(*arrSquaresRT)
 		if err != nil {
 			return nil, err
 		}
 
+		// Counting the coordinates of the left bottom corner of the circumscribing rectangle
 		lb, err := calculateGlobalLeftBottom(*arrSquaresLB)
 		if err != nil {
 			return nil, err
@@ -273,6 +278,7 @@ func calculateGlobalRightTop(points []models.Coordinates) (*models.Coordinates, 
 	}, nil
 }
 
+// return big float, precision and err (if there is).
 func getBigFloat(value string) (*big.Float, int, error) {
 
 	_, err := strconv.ParseFloat(value, 64)
@@ -282,6 +288,7 @@ func getBigFloat(value string) (*big.Float, int, error) {
 
 	var integerDigitCount int
 	var fractionalDigitCount int
+
 	if !strings.Contains(value, ".") {
 		integerDigitCount = len(value)
 		fractionalDigitCount = 0
